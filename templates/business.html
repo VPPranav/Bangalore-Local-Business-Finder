@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ business.name }} | Bangalore Local</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header header-transparent">
+        <div class="container">
+            <nav class="navbar">
+                <a href="/" class="logo">
+                    <span class="logo-icon"><i class="fas fa-map-marker-alt"></i></span>
+                    <span class="logo-text">Bangalore<span class="accent">Local</span></span>
+                </a>
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/#explore">Explore</a>
+                    <a href="/#map-section">Map</a>
+                    <a href="/#categories">Categories</a>
+                </div>
+                <button class="mobile-menu-btn" aria-label="Toggle menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Business Hero Section -->
+    <section class="business-hero" style="background-image: url('{{ business.image }}')">
+        <div class="business-hero-overlay"></div>
+        <div class="container">
+            <div class="business-hero-content">
+                <div class="business-category-badge">{{ business.category }}</div>
+                <h1 class="business-title">{{ business.name }}</h1>
+                <div class="business-meta">
+                    <div class="business-rating">
+                        <div class="stars">
+                            {{ business.rating|star_rating|safe }}
+                        </div>
+                        <span>{{ business.rating }} ({{ business.reviews }} reviews)</span>
+                    </div>
+                    <div class="business-price">
+                        {{ business.price_range if business.price_range else "₹₹" }}
+                    </div>
+                </div>
+                <div class="business-actions">
+                    <a href="tel:{{ business.phone }}" class="btn btn-primary">
+                        <i class="fas fa-phone"></i> Call Now
+                    </a>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ business.lat }},{{ business.lng }}" target="_blank" class="btn btn-outline-light">
+                        <i class="fas fa-directions"></i> Get Directions
+                    </a>
+                    <a href="#" class="btn btn-outline-light" onclick="shareBusinessDetails(event)">
+                        <i class="fas fa-share-alt"></i> Share
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Business Navigation -->
+    <div class="business-nav">
+        <div class="container">
+            <nav class="business-nav-links">
+                <a href="#overview" class="active">Overview</a>
+                <a href="#photos">Photos</a>
+                <a href="#location">Location</a>
+                <a href="#reviews">Reviews</a>
+                <a href="#similar">Similar Places</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Business Content -->
+    <div class="business-content">
+        <div class="container">
+            <a href="/" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to all businesses
+            </a>
+            
+            <div class="business-layout">
+                <!-- Main Content -->
+                <div class="business-main">
+                    <!-- Overview Section -->
+                    <section id="overview" class="business-section">
+                        <h2 class="section-title">About {{ business.name }}</h2>
+                        <div class="business-description">
+                            <p>{{ business.description }}</p>
+                        </div>
+                        
+                        {% if business.features %}
+                        <div class="business-features">
+                            <h3>Features</h3>
+                            <div class="features-list">
+                                {% for feature in business.features %}
+                                <span class="feature-tag">{{ feature }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </section>
+
+                    <!-- Photos Section -->
+                    <section id="photos" class="business-section">
+                        <h2 class="section-title">Photos</h2>
+                        <div class="photo-gallery">
+                            <div class="gallery-main">
+                                <img src="{{ business.image }}" alt="{{ business.name }}">
+                            </div>
+                            <div class="gallery-thumbnails">
+                                <img src="{{ business.image }}" alt="{{ business.name }}" class="active">
+                                
+                                {% if business.gallery %}
+                                    {% for image in business.gallery %}
+                                        <img src="{{ image }}" alt="{{ business.name }} - Gallery Image" {% if loop.first %}class="active"{% endif %}>
+                                    {% endfor %}
+                                {% endif %}
+                                
+                                <div class="gallery-more">
+                                    <span>View All Photos</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Location Section -->
+                    <section id="location" class="business-section">
+                        <h2 class="section-title">Location & Hours</h2>
+                        <div class="location-container">
+                            <div id="business-map" class="business-map" 
+                                data-lat="{{ business.lat }}" 
+                                data-lng="{{ business.lng }}" 
+                                data-name="{{ business.name }}">
+                            </div>
+                            <div class="location-details">
+                                <div class="address-container">
+                                    <h3>Address</h3>
+                                    <p>{{ business.address }}</p>
+                                    <a href="https://maps.google.com/?q={{ business.lat }},{{ business.lng }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-directions"></i> Get Directions
+                                    </a>
+                                </div>
+                                <div class="hours-container">
+                                    <h3>Business Hours</h3>
+                                    <div class="hours-list">
+                                        {{ business.hours }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Reviews Section -->
+                    <section id="reviews" class="business-section">
+                        <h2 class="section-title">Reviews</h2>
+                        <div class="reviews-summary">
+                            <div class="rating-summary">
+                                <div class="rating-big">{{ business.rating }}</div>
+                                <div class="stars">
+                                    {{ business.rating|star_rating|safe }}
+                                </div>
+                                <div class="reviews-count">{{ business.reviews }} reviews</div>
+                            </div>
+                            <div class="write-review">
+                                <a href="#" class="btn btn-primary" onclick="openReviewForm(event)">
+                                    <i class="fas fa-pencil-alt"></i> Write a Review
+                                </a>
+                            </div>
+                        </div>
+                        <div class="reviews-list">
+                            <!-- Sample reviews - in a real app, these would come from a database -->
+                            <div class="review-card">
+                                <div class="review-header">
+                                    <div class="reviewer">
+                                        <div class="reviewer-avatar">
+                                            <img src="https://randomuser.me/api/portraits/women/12.jpg" alt="Reviewer">
+                                        </div>
+                                        <div class="reviewer-info">
+                                            <h4>Priya Sharma</h4>
+                                            <span>Local Guide · 45 reviews</span>
+                                        </div>
+                                    </div>
+                                    <div class="review-rating">
+                                        <div class="stars">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                        <span class="review-date">2 weeks ago</span>
+                                    </div>
+                                </div>
+                                <div class="review-content">
+                                    <p>Absolutely loved my experience here! The atmosphere was perfect, and the service was exceptional. Highly recommend to anyone visiting Bangalore.</p>
+                                </div>
+                            </div>
+                            <div class="review-card">
+                                <div class="review-header">
+                                    <div class="reviewer">
+                                        <div class="reviewer-avatar">
+                                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Reviewer">
+                                        </div>
+                                        <div class="reviewer-info">
+                                            <h4>Rahul Mehta</h4>
+                                            <span>Local Guide · 23 reviews</span>
+                                        </div>
+                                    </div>
+                                    <div class="review-rating">
+                                        <div class="stars">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="far fa-star"></i>
+                                        </div>
+                                        <span class="review-date">1 month ago</span>
+                                    </div>
+                                </div>
+                                <div class="review-content">
+                                    <p>Great place with a nice ambiance. The only reason for 4 stars instead of 5 is that it can get quite crowded on weekends. Otherwise, it's a must-visit spot in Bangalore.</p>
+                                </div>
+                            </div>
+                            <div class="review-card">
+                                <div class="review-header">
+                                    <div class="reviewer">
+                                        <div class="reviewer-avatar">
+                                            <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Reviewer">
+                                        </div>
+                                        <div class="reviewer-info">
+                                            <h4>Aisha Khan</h4>
+                                            <span>Local Guide · 78 reviews</span>
+                                        </div>
+                                    </div>
+                                    <div class="review-rating">
+                                        <div class="stars">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                        </div>
+                                        <span class="review-date">2 months ago</span>
+                                    </div>
+                                </div>
+                                <div class="review-content">
+                                    <p>One of my favorite places in Bangalore! The quality is consistently good, and the staff is always friendly and helpful. I've been coming here for years and will continue to do so.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="reviews-more">
+                            <button class="btn btn-outline-primary">Load More Reviews</button>
+                        </div>
+                    </section>
+
+                    <!-- Similar Places Section -->
+                    <section id="similar" class="business-section">
+                        <h2 class="section-title">Similar Places</h2>
+                        <div class="similar-places">
+                            <div class="businesses-grid">
+                                {% if similar_businesses %}
+                                    {% for similar in similar_businesses %}
+                                        <div class="business-card">
+                                            <div class="card-image">
+                                                <img src="{{ similar.image }}" alt="{{ similar.name }}">
+                                                <div class="card-category">{{ similar.category }}</div>
+                                            </div>
+                                            <div class="card-content">
+                                                <h3 class="card-title">{{ similar.name }}</h3>
+                                                <div class="card-location">
+                                                    <i class="fas fa-map-marker-alt"></i>
+                                                    <span>{{ similar.location }}</span>
+                                                </div>
+                                                <p class="card-description">{{ similar.description }}</p>
+                                                <div class="card-footer">
+                                                    <div class="card-rating">
+                                                        <div class="stars">
+                                                            {{ similar.rating|star_rating|safe }}
+                                                        </div>
+                                                        <span>{{ similar.rating }}</span>
+                                                    </div>
+                                                    <div class="card-price">{{ similar.price_range }}</div>
+                                                </div>
+                                                <a href="/business/{{ similar.id }}" class="btn btn-outline-primary btn-block" style="margin-top: 1rem;">View Details</a>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p>No similar businesses found.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="business-sidebar">
+                    <div class="sidebar-card contact-card">
+                        <h3>Contact Information</h3>
+                        <ul class="contact-list">
+                            <li>
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ business.address }}</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-phone"></i>
+                                <span>{{ business.phone }}</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-envelope"></i>
+                                <span>{{ business.email }}</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-globe"></i>
+                                <a href="{{ business.website }}" target="_blank">{{ business.website }}</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-card hours-card">
+                        <h3>Business Hours</h3>
+                        <div class="hours-list">
+                            {{ business.hours }}
+                        </div>
+                        <div class="open-now">
+                            {% if is_open %}
+                                <span class="open-badge">Open Now</span>
+                                <span class="closes-at">Closes at {{ closes_at }}</span>
+                            {% else %}
+                                <span class="closed-badge">Closed Now</span>
+                                <span class="closes-at">Opens at 9:00 AM</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="sidebar-card claim-card">
+                        <h3>Own this business?</h3>
+                        <p>Claim this listing to respond to reviews, update your profile and manage your listing.</p>
+                        <a href="#" class="btn btn-outline-primary btn-block">Claim This Business</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <a href="/" class="footer-logo">
+                        <span class="logo-icon"><i class="fas fa-map-marker-alt"></i></span>
+                        <span class="logo-text">Bangalore<span class="accent">Local</span></span>
+                    </a>
+                    <p>Discover and support the best local businesses in Bangalore. Our mission is to connect you with the city's hidden gems.</p>
+                    <div class="social-links">
+                        <a href="https://www.instagram.com/pranav_vp_07?utm_source=qr&igsh=MXNjeGlzZTk5MDdlNg==" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://x.com/Pranav62196016?t=qX5QCJn-dlJGcb-wjK9oeA&s=08" aria-label="X"><i class="fab fa-x"></i></a>
+                        <a href="https://www.linkedin.com/in/pranav-vp-3636b825a/" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/#explore">Explore</a></li>
+                        <li><a href="/#map-section">Map</a></li>
+                        <li><a href="/#categories">Categories</a></li>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Popular Areas</h3>
+                    <ul class="footer-links">
+                        <li><a href="/?location=Koramangala">Koramangala</a></li>
+                        <li><a href="/?location=Indiranagar">Indiranagar</a></li>
+                        <li><a href="/?location=HSR Layout">HSR Layout</a></li>
+                        <li><a href="/?location=Whitefield">Whitefield</a></li>
+                        <li><a href="/?location=Central Bangalore">Central Bangalore</a></li>
+                        <li><a href="/?location=Ulsoor">Ulsoor</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact Us</h3>
+                    <ul class="contact-info">
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>4th Block, 3rd Main Road, Rajajinagar, Bangalore - 560010</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-phone"></i>
+                            <span>+91 9380833197</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <span>pranavvp1507@gmail.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 BangaloreLocal. All rights reserved.(Created By Pranav V P)</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Sitemap</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Google Maps API -->
+    <script>
+        // Define the initBusinessMap function before loading the Google Maps API
+        function initBusinessMap() {
+            console.log("Google Maps API loaded successfully for business page");
+            const businessMapElement = document.getElementById("business-map");
+            if (businessMapElement) {
+                const lat = Number.parseFloat(businessMapElement.dataset.lat);
+                const lng = Number.parseFloat(businessMapElement.dataset.lng);
+                const name = businessMapElement.dataset.name;
+                
+                // Create the map
+                const businessMap = new google.maps.Map(businessMapElement, {
+                    zoom: 15,
+                    center: { lat, lng },
+                    styles: [
+                        {
+                            featureType: "administrative",
+                            elementType: "labels.text.fill",
+                            stylers: [{ color: "#444444" }],
+                        },
+                        {
+                            featureType: "landscape",
+                            elementType: "all",
+                            stylers: [{ color: "#f2f2f2" }],
+                        },
+                        {
+                            featureType: "poi",
+                            elementType: "all",
+                            stylers: [{ visibility: "off" }],
+                        },
+                        {
+                            featureType: "road",
+                            elementType: "all",
+                            stylers: [{ saturation: -100 }, { lightness: 45 }],
+                        },
+                        {
+                            featureType: "road.highway",
+                            elementType: "all",
+                            stylers: [{ visibility: "simplified" }],
+                        },
+                        {
+                            featureType: "road.arterial",
+                            elementType: "labels.icon",
+                            stylers: [{ visibility: "off" }],
+                        },
+                        {
+                            featureType: "transit",
+                            elementType: "all",
+                            stylers: [{ visibility: "off" }],
+                        },
+                        {
+                            featureType: "water",
+                            elementType: "all",
+                            stylers: [{ color: "#4361ee" }, { visibility: "on" }],
+                        },
+                    ],
+                });
+                
+                // Add marker
+                const marker = new google.maps.Marker({
+                    position: { lat, lng },
+                    map: businessMap,
+                    title: name,
+                    animation: google.maps.Animation.DROP,
+                });
+                
+                // Create info window content
+                const content = `
+                    <div class="info-window">
+                        <h3>${name}</h3>
+                        <p>Click for directions</p>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="info-link">Get Directions</a>
+                    </div>
+                `;
+                
+                const infoWindow = new google.maps.InfoWindow({
+                    content: content,
+                });
+                
+                marker.addListener("click", () => {
+                    infoWindow.open(businessMap, marker);
+                });
+                
+                // Open info window by default
+                infoWindow.open(businessMap, marker);
+            }
+        }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBNLrJhOMz6idD05pzfn5lhA-TAw-mAZCU&callback=initBusinessMap" async defer></script>
+    
+    <!-- Main JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Additional Business Page Scripts -->
+    <script>
+        // Share business details
+        function shareBusinessDetails(event) {
+            event.preventDefault();
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '{{ business.name }} on BangaloreLocal',
+                    text: 'Check out {{ business.name }} on BangaloreLocal: {{ business.description }}',
+                    url: window.location.href
+                })
+                .catch(error => console.log('Error sharing:', error));
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                prompt('Copy this link to share:', window.location.href);
+            }
+        }
+        
+        // Open review form
+        function openReviewForm(event) {
+            event.preventDefault();
+            alert('Review functionality will be implemented in a future update.');
+        }
+    </script>
+</body>
+</html>
