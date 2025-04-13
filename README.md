@@ -223,4 +223,3 @@ For any inquiries, please contact:
 ## License
 
 This project is licensed under the MIT License.
-```
